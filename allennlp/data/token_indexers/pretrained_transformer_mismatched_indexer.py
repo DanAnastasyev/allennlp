@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 import logging
 
 from overrides import overrides
@@ -22,9 +22,7 @@ class PretrainedTransformerMismatchedIndexer(TokenIndexer):
     words into wordpieces and flattens them out. You should use the corresponding
     `PretrainedTransformerMismatchedEmbedder` to embed these wordpieces and then pull out a single
     vector for each original word.
-
     # Parameters
-
     model_name : `str`
         The name of the `transformers` model to use.
     namespace : `str`, optional (default=`tags`)
@@ -40,12 +38,13 @@ class PretrainedTransformerMismatchedIndexer(TokenIndexer):
     """
 
     def __init__(
-        self, model_name: str, namespace: str = "tags", max_length: int = None, **kwargs
+        self, model_name: str, namespace: str = "tags", max_length: int = None,
+        tokenizer_kwargs: Dict[str, Any] = None, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         # The matched version v.s. mismatched
         self._matched_indexer = PretrainedTransformerIndexer(
-            model_name, namespace, max_length, **kwargs
+            model_name, namespace, max_length, tokenizer_kwargs=tokenizer_kwargs, **kwargs
         )
         self._allennlp_tokenizer = self._matched_indexer._allennlp_tokenizer
         self._tokenizer = self._matched_indexer._tokenizer

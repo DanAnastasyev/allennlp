@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import logging
 import torch
 from allennlp.common.util import pad_sequence_to_length
@@ -21,9 +21,7 @@ class PretrainedTransformerIndexer(TokenIndexer):
     This `Indexer` is only really appropriate to use if you've also used a
     corresponding :class:`PretrainedTransformerTokenizer` to tokenize your input.  Otherwise you'll
     have a mismatch between your tokens and your vocabulary, and you'll get a lot of UNK tokens.
-
     # Parameters
-
     model_name : `str`
         The name of the `transformers` model to use.
     namespace : `str`, optional (default=`tags`)
@@ -39,11 +37,12 @@ class PretrainedTransformerIndexer(TokenIndexer):
     """
 
     def __init__(
-        self, model_name: str, namespace: str = "tags", max_length: int = None, **kwargs
+        self, model_name: str, namespace: str = "tags", max_length: int = None,
+        tokenizer_kwargs: Dict[str, Any] = None, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self._namespace = namespace
-        self._allennlp_tokenizer = PretrainedTransformerTokenizer(model_name)
+        self._allennlp_tokenizer = PretrainedTransformerTokenizer(model_name, tokenizer_kwargs=tokenizer_kwargs)
         self._tokenizer = self._allennlp_tokenizer.tokenizer
         self._added_to_vocabulary = False
 
@@ -136,7 +135,6 @@ class PretrainedTransformerIndexer(TokenIndexer):
         """
         Takes an IndexedTokenList about to be returned by `tokens_to_indices()` and adds any
         necessary postprocessing, e.g. long sequence splitting.
-
         The input should have a `"token_ids"` key corresponding to the token indices. They should
         have special tokens already inserted.
         """
