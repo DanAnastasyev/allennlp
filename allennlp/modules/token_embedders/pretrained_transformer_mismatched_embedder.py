@@ -25,10 +25,10 @@ class PretrainedTransformerMismatchedEmbedder(TokenEmbedder):
         `PretrainedTransformerMismatchedIndexer`.
     """
 
-    def __init__(self, model_name: str, max_length: int = None) -> None:
+    def __init__(self, model_name: str, max_length: int = None, requires_grad: bool = True) -> None:
         super().__init__()
         # The matched version v.s. mismatched
-        self._matched_embedder = PretrainedTransformerEmbedder(model_name, max_length)
+        self._matched_embedder = PretrainedTransformerEmbedder(model_name, max_length, requires_grad)
 
     @overrides
     def get_output_dim(self):

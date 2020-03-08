@@ -29,13 +29,18 @@ class PretrainedTransformerEmbedder(TokenEmbedder):
         `PretrainedTransformerIndexer`.
     """
 
-    def __init__(self, model_name: str, max_length: int = None) -> None:
+    def __init__(self, model_name: str, max_length: int = None, requires_grad: bool = True) -> None:
         super().__init__()
         self.transformer_model = AutoModel.from_pretrained(model_name)
         self._max_length = max_length
         # I'm not sure if this works for all models; open an issue on github if you find a case
         # where it doesn't work.
         self.output_dim = self.transformer_model.config.hidden_size
+
+        self._requires_grad = requires_grad
+
+        if not requires_grad:
+            self.transformer_model.eval()
 
         tokenizer = PretrainedTransformerTokenizer(model_name)
         self._num_added_start_tokens = tokenizer.num_added_start_tokens
@@ -112,7 +117,9 @@ class PretrainedTransformerEmbedder(TokenEmbedder):
         parameters = {"input_ids": token_ids, "attention_mask": transformer_mask}
         if type_ids is not None:
             parameters["token_type_ids"] = type_ids
-        embeddings = self.transformer_model(**parameters)[0]
+
+        with torch.set_grad_enabled(self._requires_grad):
+            embeddings = self.transformer_model(**parameters)[0]
 
         if self._max_length is not None:
             embeddings = self._unfold_long_sequences(
